@@ -1,0 +1,1 @@
+DEBUG=gastracker:* npm start
