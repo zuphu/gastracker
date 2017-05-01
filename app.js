@@ -4,6 +4,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
+var RedisStore = require('connect-redis')(session);
+var config = {
+    redisStore: {
+	url: '127.0.0.1',
+	secret: 'wtfbbq'
+    }
+};
 
 var index = require('./routes/index.js');
 var users = require('./routes/users.js');
@@ -21,6 +29,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({  
+  store: new RedisStore({
+    url: config.redisStore.url
+  }),
+  secret: config.redisStore.secret,
+  resave: false,
+  saveUninitialized: false
+}));
 
 app.use('/', index);
 app.use('/users', users);
