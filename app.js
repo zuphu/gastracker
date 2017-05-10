@@ -6,16 +6,17 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
-var config = {
-    redisStore: {
-	url: '127.0.0.1',
-	secret: 'wtfbbq'
-    }
-};
+var mongoose = require('mongoose');
+var passport = require('passport');
+var flash    = require('connect-flash');
+var configDB = require('./config/database.js');
+var morgan = require('morgan');
+
 
 var index = require('./routes/index.js');
 var users = require('./routes/users.js');
 
+mongoose.connect(configDB.url); // connect to our database
 var app = express();
 
 // view engine setup
@@ -29,17 +30,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(session({  
-  store: new RedisStore({
-    url: config.redisStore.url
-  }),
-  secret: config.redisStore.secret,
-  resave: false,
-  saveUninitialized: false
-}));
+app.use(session({
+	secret: 'supersecrets'
+})
+);
 
 app.use('/', index);
 app.use('/users', users);
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
